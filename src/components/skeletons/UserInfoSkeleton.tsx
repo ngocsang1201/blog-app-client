@@ -1,5 +1,4 @@
 import { Box, Stack } from '@mui/material';
-import React from 'react';
 import { themeMixins } from '~/utils/theme';
 import { StyledSkeleton } from './StyledSkeleton';
 

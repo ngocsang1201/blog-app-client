@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { z } from 'zod';
 import { FileInputField, InputField, MdEditorField, MuiTextField } from '~/components/formFields';
-import { useCustomMediaQuery } from '~/hooks';
+import { useCustomMediaQuery } from '~/hooks/common';
 import { Post } from '~/models';
 import { delay } from '~/utils/common';
 import { themeMixins, themeVariables } from '~/utils/theme';
@@ -91,7 +91,7 @@ export function CreateEditForm(props: CreateEditFormProps) {
 
   const handleFormSubmit = async (formValues: Post) => {
     try {
-      await onSubmit?.(formValues);
+      await onSubmit?.({ ...defaultValues, ...formValues });
     } catch (error) {}
   };
 

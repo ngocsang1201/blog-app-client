@@ -1,6 +1,6 @@
 import { Theme } from '@mui/material';
 import { Box } from '@mui/system';
-import { useCustomMediaQuery } from '~/hooks';
+import { useCustomMediaQuery } from '~/hooks/common';
 import MarkdownIt from 'markdown-it';
 import { useEffect, useRef } from 'react';
 import Editor from 'react-markdown-editor-lite';

@@ -3,7 +3,7 @@ export * from './CreateEditForm';
 export * from './MdEditor';
 export * from './PostCard';
 export * from './PostCardHeader';
-export * from './PostComment';
+export * from './PostComments';
 export * from './PostDetail';
 export * from './PostFilter';
 export * from './PostList';

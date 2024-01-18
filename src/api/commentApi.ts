@@ -14,12 +14,12 @@ export const commentApi = {
     const url = `/comments/${data._id}`;
     return axiosClient.patch(url, data);
   },
-  remove(data: Comment) {
-    const url = `/comments/${data._id}`;
+  delete(commentId: string) {
+    const url = `/comments/${commentId}`;
     return axiosClient.delete(url);
   },
-  like(id: string): Promise<Comment> {
-    const url = `/comments/${id}/like`;
+  like(commentId: string): Promise<Comment> {
+    const url = `/comments/${commentId}/like`;
     return axiosClient.post(url);
   },
 };

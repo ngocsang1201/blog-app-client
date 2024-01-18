@@ -24,36 +24,41 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ActionMenu, ConfirmDialog, UserPopup } from '~/components/common';
-import { useKeyUp, useMouseEventsWithPopup } from '~/hooks';
-import { Comment, CommentActionTypes, MenuOption } from '~/models';
-import { useAppSelector } from '~/store/hooks';
-import { selectCurrentUser } from '~/store/slices/userSlice';
+import { useKeyUp, useMouseEventsWithPopup } from '~/hooks/common';
+import { useDeleteComment, useEditComment, useLikeComment } from '~/hooks/post';
+import { Comment, MenuOption } from '~/models';
+import { useUserStore } from '~/store';
 import { formatTime } from '~/utils/common';
 import { showComingSoonToast } from '~/utils/toast';
 
 export interface CommentItemProps {
   comment: Comment;
-  onCommentAction?: (action: CommentActionTypes, comment: Comment) => void;
 }
 
-export function CommentItem(props: CommentItemProps) {
-  const { comment, onCommentAction } = props;
-
+export function CommentItem({ comment }: CommentItemProps) {
   const navigate = useNavigate();
 
   const { t } = useTranslation('postComment');
 
-  const currentUser = useAppSelector(selectCurrentUser);
+  const currentUser = useUserStore((state) => state.currentUser);
 
   const [openMenu, setOpenMenu] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [content, setContent] = useState(comment.content);
   const [editComment, setEditComment] = useState(false);
 
   const editRef = useRef<any>(null);
   const menuRef = useRef<any>(null);
   const popupRef = useRef<any>(null);
+
+  const { mutate: onEditComment, isPending: isEditPending } = useEditComment({
+    onSuccess: () => setEditComment(false),
+  });
+  const { mutate: onLikeComment } = useLikeComment();
+  const { mutate: onDeleteComment, isPending: isDeletePending } = useDeleteComment({
+    onSuccess: () => setOpenDialog(false),
+  });
+  const loading = isEditPending || isDeletePending;
 
   const { open: openPopup, mouseEvents } = useMouseEventsWithPopup();
 
@@ -75,54 +80,27 @@ export function CommentItem(props: CommentItemProps) {
     navigate(`/profile/${comment.user?.username}`);
   };
 
-  const handleChange = (e: any) => {
-    setContent(e.target.value);
-  };
-
   const cancelEdit = () => {
     setEditComment(false);
     setContent(comment.content);
   };
 
-  const handleEdit = async () => {
-    setLoading(true);
-
-    try {
-      const editedComment: Comment = {
-        ...comment,
-        content: content.trim(),
-      };
-
-      await onCommentAction?.('edit', editedComment);
-      setEditComment(false);
-    } catch (error) {}
-
-    setLoading(false);
+  const handleEdit = () => {
+    onEditComment({
+      ...comment,
+      content: content.trim(),
+    });
   };
 
-  const handleRemoveComment = async () => {
-    setLoading(true);
-
-    try {
-      await onCommentAction?.('remove', comment);
-    } catch (error) {}
-
-    setLoading(false);
-  };
-
-  const confirmRemoveComment = () => {
+  const openConfirmDialog = () => {
     closeMenu();
     setOpenDialog(true);
   };
 
-  const handleLikeComment = () => {
-    onCommentAction?.('like', comment);
-  };
-
   const onKeyUp = useKeyUp('Enter', handleEdit);
 
-  const isAuthor = comment.userId === currentUser?._id;
-  const isAdmin = currentUser?.role === 'admin';
+  const isAuthor = comment.userId === currentUser._id;
+  const isAdmin = currentUser.role === 'admin';
   const commentMenu: MenuOption[] = [
     {
       label: t('menu.edit'),
@@ -133,7 +111,7 @@ export function CommentItem(props: CommentItemProps) {
     {
       label: t('menu.delete'),
       icon: DeleteRounded,
-      onClick: confirmRemoveComment,
+      onClick: openConfirmDialog,
       show: isAuthor || isAdmin,
     },
     {
@@ -231,7 +209,7 @@ export function CommentItem(props: CommentItemProps) {
                       fullWidth
                       value={content}
                       inputRef={editRef}
-                      onChange={handleChange}
+                      onChange={(e) => setContent(e.target.value)}
                       onKeyUp={onKeyUp}
                     />
 
@@ -268,10 +246,10 @@ export function CommentItem(props: CommentItemProps) {
                 <Typography
                   color="primary"
                   variant="subtitle2"
-                  onClick={handleLikeComment}
+                  onClick={() => onLikeComment(comment._id!)}
                   sx={{ cursor: 'pointer' }}
                 >
-                  {comment.likes?.includes(currentUser?._id!) ? t('unlike') : t('like')}
+                  {comment.likes?.includes(currentUser._id!) ? t('unlike') : t('like')}
                 </Typography>
 
                 <Tooltip title={formatTime(comment.createdAt, 'DD/MM/YYYY, HH:mm')}>
@@ -323,7 +301,7 @@ export function CommentItem(props: CommentItemProps) {
         type="comment.delete"
         open={openDialog}
         onClose={() => setOpenDialog(false)}
-        onConfirm={handleRemoveComment}
+        onConfirm={() => onDeleteComment(comment._id!)}
         loading={loading}
       />
 

@@ -3,20 +3,24 @@ import { Avatar, Box, Stack, Typography } from '@mui/material';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionMenu, StyledCard, UserButtonGroup } from '~/components/common';
+import { useUserInfo } from '~/hooks/user';
 import { MenuOption, User } from '~/models';
 import { showComingSoonToast } from '~/utils/toast';
+import { UserInfoSkeleton } from '../skeletons';
 
 export interface UserInfoProps {
-  userInfo: Partial<User>;
+  username: string;
   updateUser?: (user: Partial<User>) => void;
 }
 
 export function UserInfo(props: UserInfoProps) {
-  const { userInfo, updateUser } = props;
+  const { username, updateUser } = props;
 
   const { t } = useTranslation('profile');
 
   const [openMenu, setOpenMenu] = useState(false);
+
+  const { data: userInfo, isLoading } = useUserInfo(username);
 
   const anchorRef = useRef<any>(null);
 
@@ -35,7 +39,9 @@ export function UserInfo(props: UserInfoProps) {
     },
   ];
 
-  const followArray: ('following' | 'followers')[] = ['following', 'followers'];
+  const followArray = ['following', 'followers'] as const;
+
+  if (isLoading || !userInfo) return <UserInfoSkeleton />;
 
   return (
     <StyledCard

@@ -1,7 +1,7 @@
 import { MenuOutlined } from '@mui/icons-material';
 import { Drawer, IconButton, Stack } from '@mui/material';
 import { ReactNode } from 'react';
-import { useCustomMediaQuery } from '~/hooks';
+import { useCustomMediaQuery } from '~/hooks/common';
 import { useAppDispatch } from '~/store/hooks';
 import { configActions } from '~/store/slices/configSlice';
 import { themeVariables } from '~/utils/theme';

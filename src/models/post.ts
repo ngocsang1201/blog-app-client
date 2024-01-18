@@ -25,3 +25,5 @@ export interface Comment {
   edited?: boolean;
   createdAt?: string;
 }
+
+export type LikeResponse = Required<Pick<Post, 'likes' | 'likeCount'>>;

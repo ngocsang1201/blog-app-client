@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { authApi } from '~/api';
-import { usePageTitle } from '~/hooks';
+import { usePageTitle } from '~/hooks/common';
 import { themeMixins } from '~/utils/theme';
 import { showToast } from '~/utils/toast';
 

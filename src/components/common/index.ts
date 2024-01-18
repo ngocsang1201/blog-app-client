@@ -4,7 +4,6 @@ export * from './Auth';
 export * from './ConfirmDialog';
 export * from './ContainedInput';
 export * from './CustomScrollbar';
-export * from './CustomThemeProvider';
 export * from './NoPost';
 export * from './Notifications';
 export * from './PageTitle';

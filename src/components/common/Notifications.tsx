@@ -3,7 +3,6 @@ import {
   Avatar,
   Box,
   CircularProgress,
-  ClickAwayListener,
   Divider,
   IconButton,
   List,
@@ -11,14 +10,12 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { notificationApi } from '~/api';
 import { themeMixins } from 'utils/theme';
+import { useNotifications } from '~/hooks/notification';
 import { Notification } from '~/models';
-import { useAppSelector } from '~/store/hooks';
-import { selectCurrentUser } from '~/store/slices/userSlice';
+import { useUserStore } from '~/store';
 
 const NUMBER_OF_NAME_TO_SHOW = 1;
 
@@ -34,31 +31,15 @@ export function Notifications(props: NotificationsProps) {
 
   const navigate = useNavigate();
 
-  const currentUser = useAppSelector(selectCurrentUser);
+  const currentUser = useUserStore((state) => state.currentUser);
 
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-
-    (async () => {
-      try {
-        setLoading(true);
-
-        const notifications = await notificationApi.getAll();
-        setNotifications(notifications);
-      } catch (error) {
-        console.error('Failed to get notifications', error);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [open]);
+  const { data: notifications, isFetching } = useNotifications({
+    enabled: open,
+  });
 
   const handleNotificationClick = ({ type, postSlug }: Notification) => {
     if (type === 'follow') {
-      navigate(`/profile/${currentUser?.username}`);
+      navigate(`/profile/${currentUser.username}`);
     } else {
       navigate(`/post/${postSlug}`);
     }
@@ -101,7 +82,7 @@ export function Notifications(props: NotificationsProps) {
       <Divider />
 
       <Box>
-        {loading ? (
+        {isFetching ? (
           <Stack justifyContent="center" py={2}>
             <CircularProgress size={28} />
           </Stack>

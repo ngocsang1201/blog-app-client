@@ -5,20 +5,20 @@ import { useTranslation } from 'react-i18next';
 import images from '~/assets/images';
 import { MuiTextField } from '~/components/formFields';
 import { APP_NAME } from '~/constants';
-import { FormField, LoginFormValues, RegisterFormValues } from '~/models';
+import { FormField } from '~/models';
 import { AuthButton } from './AuthButton';
 
-export interface AuthFormProps {
-  name: 'login' | 'register';
-  control: Control<LoginFormValues> | Control<RegisterFormValues>;
-  onSubmit: FormEventHandler<HTMLFormElement>;
+export interface AuthFormProps<TFormValues extends object> {
+  name: string;
+  control: Control<TFormValues>;
   fieldList: FormField[];
-  submitting: boolean;
+  loading: boolean;
+  onSubmit: FormEventHandler<HTMLFormElement>;
   onGoogleLogin?: () => void;
 }
 
-export function AuthForm(props: AuthFormProps) {
-  const { name: formName, control, onSubmit, fieldList, submitting, onGoogleLogin } = props;
+export function AuthForm<TFormValues extends object>(props: AuthFormProps<TFormValues>) {
+  const { name: formName, control, fieldList, loading, onSubmit, onGoogleLogin } = props;
 
   const { t } = useTranslation(`${formName}Page`);
 
@@ -53,7 +53,7 @@ export function AuthForm(props: AuthFormProps) {
             label={t(`form.label.${name}`)}
             variant="outlined"
             size="medium"
-            disabled={submitting}
+            disabled={loading}
             sx={{
               '& input': {
                 py: 1.5,
@@ -70,8 +70,8 @@ export function AuthForm(props: AuthFormProps) {
         <AuthButton
           type="submit"
           variant="contained"
-          disabled={submitting}
-          startIcon={submitting && <CircularProgress size={20} />}
+          disabled={loading}
+          startIcon={loading && <CircularProgress size={20} />}
           sx={{ fontSize: 16 }}
         >
           {t('form.button.submit')}

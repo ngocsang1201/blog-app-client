@@ -1,7 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import Providers from './providers';
-
 import 'i18n';
 import './styles/index.css';
 

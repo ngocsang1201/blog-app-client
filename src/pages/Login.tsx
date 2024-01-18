@@ -1,29 +1,24 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { z } from 'zod';
-import { authApi } from '~/api';
 import { AuthForm } from '~/components/auth';
-import { useAuthentication, usePageTitle } from '~/hooks';
+import { useForgotPassword, useLoginEmail, useLoginGoogle } from '~/hooks/auth';
+import { usePageTitle } from '~/hooks/common';
 import { FormField, LoginFormValues } from '~/models';
-import { useAppSelector } from '~/store/hooks';
-import { selectAuthSubmitting } from '~/store/slices/userSlice';
 import { validateEmail } from '~/utils/common';
-import { showToast } from '~/utils/toast';
 
 export function LoginPage() {
   const { t } = useTranslation('loginPage');
   const { t: tValidate } = useTranslation('validate');
 
-  const submitting = useAppSelector(selectAuthSubmitting);
-
-  const { login, googleLogin } = useAuthentication();
-
-  const [forgotLoading, setForgotLoading] = useState(false);
+  const { mutate: forgotPassword, isPending: forgotPasswordLoading } = useForgotPassword();
+  const { mutate: loginWithEmail, isPending: loginEmailLoading } = useLoginEmail();
+  const { signIn: loginWithGoogle, loading: loginGoogleLoading } = useLoginGoogle();
+  const loading = loginEmailLoading || loginGoogleLoading;
 
   usePageTitle(t('pageTitle'));
 
@@ -43,31 +38,26 @@ export function LoginPage() {
     resolver: zodResolver(schema),
   });
 
-  const submitForm = (formValues: LoginFormValues) => {
-    login(formValues);
+  const submitForm = (formValues: LoginFormValues) => loginWithEmail(formValues);
+
+  const checkEmail = (email: string) => {
+    if (email.trim().length === 0) {
+      toast.error(tValidate('email.required'));
+      return false;
+    }
+
+    if (!validateEmail(email)) {
+      toast.error(tValidate('email.email'));
+      return false;
+    }
+
+    return true;
   };
 
-  const handleForgotPassword = async () => {
-    try {
-      const email = getValues('email');
-
-      if (email.trim().length === 0) {
-        toast.error(tValidate('email.required'));
-        return;
-      }
-
-      if (!validateEmail(email)) {
-        toast.error(tValidate('email.email'));
-        return;
-      }
-
-      setForgotLoading(true);
-
-      await authApi.forgotPassword(email);
-      showToast('checkEmail', 'info');
-    } catch (error) {}
-
-    setForgotLoading(false);
+  const handleForgotPassword = () => {
+    const email = getValues('email');
+    const isValid = checkEmail(email);
+    isValid && forgotPassword(email);
   };
 
   const fieldList: FormField[] = [
@@ -82,8 +72,8 @@ export function LoginPage() {
         control={control}
         fieldList={fieldList}
         onSubmit={handleSubmit(submitForm)}
-        submitting={submitting}
-        onGoogleLogin={googleLogin}
+        loading={loading}
+        onGoogleLogin={loginWithGoogle}
       />
 
       <Box textAlign="center" my={1}>
@@ -105,7 +95,7 @@ export function LoginPage() {
       <Stack direction="column" alignItems="center" justifyContent="center">
         <Button
           variant="text"
-          disabled={forgotLoading}
+          disabled={forgotPasswordLoading}
           onClick={handleForgotPassword}
           sx={{
             p: 0,
@@ -115,7 +105,7 @@ export function LoginPage() {
           {t('forgotPassword')}
         </Button>
 
-        {forgotLoading && <CircularProgress size={20} sx={{ mt: 1 }} />}
+        {forgotPasswordLoading && <CircularProgress size={20} sx={{ mt: 1 }} />}
       </Stack>
     </Box>
   );

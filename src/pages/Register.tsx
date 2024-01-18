@@ -5,18 +5,15 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { z } from 'zod';
 import { AuthForm } from '~/components/auth';
-import { useAuthentication, usePageTitle } from '~/hooks';
+import { useRegister } from '~/hooks/auth';
+import { usePageTitle } from '~/hooks/common';
 import { FormField, RegisterFormValues } from '~/models';
-import { useAppSelector } from '~/store/hooks';
-import { selectAuthSubmitting } from '~/store/slices/userSlice';
 
 export function RegisterPage() {
   const { t } = useTranslation('registerPage');
   const { t: tValidate } = useTranslation('validate');
 
-  const submitting = useAppSelector(selectAuthSubmitting);
-
-  const { register } = useAuthentication();
+  const { mutate: register, isPending } = useRegister();
 
   usePageTitle(t('pageTitle'));
 
@@ -65,7 +62,7 @@ export function RegisterPage() {
         control={control}
         fieldList={fieldList}
         onSubmit={handleSubmit(submitForm)}
-        submitting={submitting}
+        loading={isPending}
       />
 
       <Box textAlign="center" my={1}>

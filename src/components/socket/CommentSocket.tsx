@@ -1,7 +1,7 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
+import { QueryKey } from '~/constants';
 import { Comment } from '~/models';
-import { useAppDispatch } from '~/store/hooks';
-import { commentActions } from '~/store/slices/commentSlice';
 import { SocketProps } from './SocketClient';
 
 const EVENTS = {
@@ -11,19 +11,27 @@ const EVENTS = {
 };
 
 export function CommentSocket({ socket }: SocketProps) {
-  const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!socket) return;
 
     socket.on(EVENTS.CREATE_COMMENT, ({ comment }: { comment: Comment }) => {
-      dispatch(commentActions.create(comment));
+      let commentCount = 0;
+      queryClient.setQueryData([QueryKey.COMMENTS, comment.postId], (commentList: Comment[]) => {
+        return [comment, ...commentList];
+      });
     });
     socket.on(EVENTS.EDIT_COMMENT, ({ comment }: { comment: Comment }) => {
-      dispatch(commentActions.edit(comment));
+      queryClient.setQueryData([QueryKey.COMMENTS, comment.postId], (commentList: Comment[]) => {
+        return commentList.map((c) => (c._id === comment._id ? comment : c));
+      });
     });
-    socket.on(EVENTS.CREATE_COMMENT, ({ id }: { id: string }) => {
-      dispatch(commentActions.remove(id));
+    socket.on(EVENTS.REMOVE_COMMENT, ({ comment }: { comment: Comment }) => {
+      let commentCount = 0;
+      queryClient.setQueryData([QueryKey.COMMENTS, comment.postId], (commentList: Comment[]) => {
+        return commentList.filter((c) => c._id !== comment._id);
+      });
     });
 
     return () => {
@@ -31,7 +39,7 @@ export function CommentSocket({ socket }: SocketProps) {
       socket.off(EVENTS.EDIT_COMMENT);
       socket.off(EVENTS.REMOVE_COMMENT);
     };
-  }, [socket, dispatch]);
+  }, [socket]);
 
   return null;
 }

@@ -3,7 +3,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import i18next from 'i18next';
 import slugify from 'slugify';
 import { otherApi } from '~/api';
-import { Post, SearchResult, User } from '~/models';
+import { PaginationParams, Post, SearchResult, User } from '~/models';
 import { showToast } from './toast';
 
 import 'dayjs/locale/vi';
@@ -53,3 +53,6 @@ export const formatSearchResponse = (response: Post[] | Partial<User>[]): Search
     url: data.slug ? `/post/${data.slug}` : `/profile/${data.username}`,
   }));
 };
+
+export const calculateTotalPage = (pagination?: PaginationParams) =>
+  pagination ? Math.ceil(pagination?.totalRows / pagination?.limit) : 1;

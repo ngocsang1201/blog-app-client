@@ -6,7 +6,6 @@ import notFoundPage from './pages/notFoundPage.json';
 import profilePage from './pages/profilePage.json';
 import loginPage from './pages/loginPage.json';
 import registerPage from './pages/registerPage.json';
-import searchPage from './pages/searchPage.json';
 
 // components
 import header from './components/header.json';
@@ -44,7 +43,6 @@ export default {
   profilePage,
   loginPage,
   registerPage,
-  searchPage,
 
   // components
   header,

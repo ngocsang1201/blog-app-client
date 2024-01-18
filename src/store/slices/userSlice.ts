@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { authApi, userApi } from '~/api';
-import { ACCESS_TOKEN, CONFIG } from '~/constants';
+import { localStorageKey } from '~/constants';
 import {
   AuthPayload,
   GoogleAuthPayload,
@@ -19,7 +19,7 @@ export const login = createAsyncThunk(
     try {
       const { formValues, navigate } = payload;
       const { user, token } = await authApi.login(formValues);
-      localStorage.setItem(ACCESS_TOKEN, token);
+      localStorage.setItem(localStorageKey.ACCESS_TOKEN, token);
       navigate?.('/', { replace: true });
       return user;
     } catch (error) {
@@ -40,7 +40,7 @@ export const googleLogin = createAsyncThunk(
         return null;
       }
 
-      localStorage.setItem(ACCESS_TOKEN, token);
+      localStorage.setItem(localStorageKey.ACCESS_TOKEN, token);
       navigate?.('/', { replace: true });
       return user;
     } catch (error) {
@@ -82,7 +82,7 @@ interface UserState {
   config: UserConfig;
 }
 
-const localConfig = JSON.parse(localStorage.getItem(CONFIG) || '{}');
+const localConfig = JSON.parse(localStorage.getItem(localStorageKey.USER_CONFIG) || '{}');
 
 const initialState: UserState = {
   submitting: false,
@@ -116,7 +116,7 @@ const userSlice = createSlice({
     updateConfig(state, action: PayloadAction<{ name: UserConfigKey; value: any }>) {
       const { name, value } = action.payload;
       state.config[name] = value;
-      localStorage.setItem(CONFIG, JSON.stringify(state.config));
+      localStorage.setItem(localStorageKey.USER_CONFIG, JSON.stringify(state.config));
     },
   },
   extraReducers(builder) {
@@ -172,7 +172,6 @@ const userSlice = createSlice({
 export const userActions = userSlice.actions;
 
 export const selectAuthSubmitting = (state: RootState) => state.user.submitting;
-export const selectCurrentUser = (state: RootState) => state.user.currentUser;
 export const selectUserConfig = (state: RootState) => state.user.config;
 
 const userReducer = userSlice.reducer;

@@ -7,7 +7,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { authApi } from '~/api';
 import { PageTitle } from '~/components/common';
-import { usePageTitle } from '~/hooks';
+import { usePageTitle } from '~/hooks/common';
 import { ChangePasswordFormValues } from '~/models';
 import { themeMixins } from '~/utils/theme';
 import { MuiTextField } from '../formFields';
@@ -22,6 +22,7 @@ export function UpdatePasswordForm() {
 
   const schema = z
     .object({
+      token: z.string(),
       newPassword: z.string().min(6, tValidate('password.min', { min: 6 })),
       confirmPassword: z.string().min(6, tValidate('password.min', { min: 6 })),
     })

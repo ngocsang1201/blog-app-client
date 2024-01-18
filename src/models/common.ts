@@ -1,4 +1,5 @@
 import { Breakpoint } from '@mui/material';
+import { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
 import { IconType } from './mui';
 import { PostByTypes } from './types';
 
@@ -10,6 +11,7 @@ export interface PaginationParams {
   page: number;
   limit: number;
   totalRows: number;
+  totalPage?: number;
 }
 
 export interface ListResponse<T> {
@@ -70,3 +72,18 @@ export interface SearchFilter {
   search?: string;
   username?: string;
 }
+
+export interface ApiServiceError {
+  name: string;
+  message: string;
+}
+
+export type UseQueryOpt<Response> = Omit<
+  UseQueryOptions<Response, ApiServiceError>,
+  'queryFn' | 'queryKey'
+>;
+
+export type UseMutationOpt<Response, Variables = void> = Omit<
+  UseMutationOptions<Response, ApiServiceError, Variables>,
+  'mutationFn'
+>;

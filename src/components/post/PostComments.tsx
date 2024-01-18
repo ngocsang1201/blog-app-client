@@ -1,31 +1,32 @@
 import { CloseRounded } from '@mui/icons-material';
 import { Avatar, CircularProgress, IconButton, List, Stack, Typography } from '@mui/material';
-import { useAppSelector } from '~/store/hooks';
-import { ContainedInput } from '~/components/common';
-import { CommentItemSkeleton } from '~/components/skeletons';
-import { selectCurrentUser } from '~/store/slices/userSlice';
-import { selectCommentLoading } from '~/store/slices/commentSlice';
-import { useKeyUp } from '~/hooks';
-import { Comment, CommentActionTypes } from '~/models';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ContainedInput } from '~/components/common';
+import { CommentItemSkeleton } from '~/components/skeletons';
+import { useKeyUp } from '~/hooks/common';
+import { useAddComment, usePostComments } from '~/hooks/post';
+import { useUserStore } from '~/store';
 import { CommentItem } from './CommentItem';
 
-export interface PostCommentProps {
-  commentList: Comment[];
+export interface PostCommentsProps {
   postId: string;
   onClose?: () => void;
-  updateCommentCount?: (count: number) => void;
-  onCommentAction?: (action: CommentActionTypes, comment: Comment) => void;
 }
 
-export function PostComment(props: PostCommentProps) {
-  const { commentList, postId, onClose, updateCommentCount, onCommentAction } = props;
+export function PostComments(props: PostCommentsProps) {
+  const { postId, onClose } = props;
 
   const { t } = useTranslation('postComment');
 
-  const loading = useAppSelector(selectCommentLoading);
-  const currentUser = useAppSelector(selectCurrentUser);
+  const { data: commentList, isFetching } = usePostComments(postId);
+
+  const { mutate: addComment } = useAddComment({
+    onMutate: () => setInput(''),
+    onSettled: () => inputRef.current?.focus(),
+  });
+
+  const currentUser = useUserStore((state) => state.currentUser);
 
   const inputRef = useRef<HTMLInputElement>();
   const [input, setInput] = useState<string>('');
@@ -34,28 +35,12 @@ export function PostComment(props: PostCommentProps) {
     inputRef.current?.focus();
   }, []);
 
-  useEffect(() => {
-    updateCommentCount?.(commentList.length);
-  }, [commentList.length]);
-
-  const handleInputChange = (e: any) => {
-    setInput(e.target.value);
-  };
-
-  const handleSubmitComment = async () => {
-    setInput('');
-
-    try {
-      const comment: Comment = {
-        postId,
-        userId: currentUser?._id!,
-        content: input.trim(),
-      };
-
-      await onCommentAction?.('create', comment);
-    } catch (error) {}
-
-    inputRef.current?.focus();
+  const handleSubmitComment = () => {
+    addComment({
+      postId,
+      userId: currentUser._id,
+      content: input.trim(),
+    });
   };
 
   const onKeyUp = useKeyUp('Enter', handleSubmitComment);
@@ -91,13 +76,13 @@ export function PostComment(props: PostCommentProps) {
             cursor: 'default',
           }}
         >
-          {loading ? <CircularProgress size={20} sx={{ mr: 1 }} /> : commentList.length || 0}
+          {isFetching ? <CircularProgress size={20} sx={{ mr: 1 }} /> : commentList.length || 0}
           {t(`comment${commentList.length > 1 ? 's' : ''}`)}
         </Typography>
 
         <Stack alignItems="center" mt={6} mb={3}>
           <Avatar
-            src={currentUser?.avatar}
+            src={currentUser.avatar}
             sx={{
               width: 36,
               height: 36,
@@ -114,7 +99,7 @@ export function PostComment(props: PostCommentProps) {
             autoFocus
             value={input}
             onSubmit={handleSubmitComment}
-            onChange={handleInputChange}
+            onChange={(e) => setInput(e.target.value)}
             onKeyUp={onKeyUp}
           />
         </Stack>
@@ -129,12 +114,10 @@ export function PostComment(props: PostCommentProps) {
           py: 0,
         }}
       >
-        {loading ? (
+        {isFetching ? (
           <CommentItemSkeleton />
         ) : (
-          commentList?.map((comment) => (
-            <CommentItem key={comment._id} comment={comment} onCommentAction={onCommentAction} />
-          ))
+          commentList.map((comment) => <CommentItem key={comment._id} comment={comment} />)
         )}
       </List>
     </Stack>

@@ -4,12 +4,11 @@ import {
   FavoriteRounded,
 } from '@mui/icons-material';
 import { Box, Button, Stack, Typography } from '@mui/material';
-import { useAppSelector } from '~/store/hooks';
 import { Post } from '~/models';
-import { selectCurrentUser } from '~/store/slices/userSlice';
+import { useUserStore } from '~/store';
 
 export interface PostReactionProps {
-  post: Post | null;
+  post?: Post | null;
   onOpenComment?: () => void;
   onLikePost?: () => void;
 }
@@ -17,7 +16,7 @@ export interface PostReactionProps {
 export function PostReaction(props: PostReactionProps) {
   const { post, onOpenComment, onLikePost } = props;
 
-  const currentUser = useAppSelector(selectCurrentUser);
+  const currentUser = useUserStore((state) => state.currentUser);
 
   if (!post) return null;
 
@@ -49,7 +48,7 @@ export function PostReaction(props: PostReactionProps) {
         <Button
           color="inherit"
           startIcon={
-            post.likes!.includes(currentUser?._id!) ? (
+            post.likes!.includes(currentUser._id!) ? (
               <FavoriteRounded sx={{ color: 'error.main' }} />
             ) : (
               <FavoriteBorderRounded />

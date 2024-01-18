@@ -12,67 +12,54 @@ import { useNavigate } from 'react-router-dom';
 import { ConfirmDialog, StyledCard } from '~/components/common';
 import { ROLE } from '~/constants';
 import { MenuOption, Post } from '~/models';
-import { useAppSelector } from '~/store/hooks';
-import { selectCurrentUser } from '~/store/slices/userSlice';
+import { useUserStore } from '~/store';
 import { copyPostLink } from '~/utils/common';
 import { showComingSoonToast, showToast } from '~/utils/toast';
 import { MdEditor, PostCardHeader } from '.';
+import { useDeletePost, useSavePost } from '~/hooks/post';
 
 export interface PostDetailProps {
-  post: Post | null;
-  onSave?: (post: Post) => void;
-  onDelete?: (post: Post) => void;
+  post: Post;
 }
 
-export function PostDetail(props: PostDetailProps) {
-  const { post, onSave, onDelete } = props;
-  if (!post) return null;
-
+export function PostDetail({ post }: PostDetailProps) {
   const navigate = useNavigate();
 
   const { t } = useTranslation('postMenu');
 
-  const currentUser = useAppSelector(selectCurrentUser);
-
   const [openDialog, setOpenDialog] = useState(false);
-  const [loading, setLoading] = useState(false);
+
+  const currentUser = useUserStore((state) => state.currentUser);
 
   const closeDialog = () => setOpenDialog(false);
 
-  const handleSavePost = async () => {
-    try {
-      await onSave?.(post);
-      showToast('post.save');
-    } catch (error) {}
-  };
-
-  const handleRemovePost = async () => {
-    setLoading(true);
-
-    try {
-      await onDelete?.(post);
+  const { mutate: deletePost, isPending } = useDeletePost({
+    onSuccess: () => {
       showToast('post.delete');
-      navigate('/');
-    } catch (error) {}
+      closeDialog();
+    },
+  });
+  const { mutate: savePost } = useSavePost({
+    onSuccess: () => {
+      showToast('post.save');
+    },
+  });
 
-    setLoading(false);
-    closeDialog();
-  };
-
-  const isAuthor = post.authorId === currentUser?._id;
-  const isAdmin = currentUser?.role === ROLE.ADMIN;
+  const postId = post._id!;
+  const isAuthor = post.authorId === currentUser._id;
+  const isAdmin = currentUser.role === ROLE.ADMIN;
 
   const actionMenu: MenuOption[] = [
     {
       label: t('save'),
       icon: BookmarkRounded,
-      onClick: handleSavePost,
+      onClick: () => savePost(postId),
       show: true,
     },
     {
       label: t('edit'),
       icon: BorderColorRounded,
-      onClick: () => navigate?.(`/edit/${post._id}`),
+      onClick: () => navigate?.(`/edit/${postId}`),
       show: isAuthor,
     },
     {
@@ -123,8 +110,8 @@ export function PostDetail(props: PostDetailProps) {
         type="post.delete"
         open={openDialog}
         onClose={closeDialog}
-        onConfirm={handleRemovePost}
-        loading={loading}
+        onConfirm={() => deletePost(postId)}
+        loading={isPending}
       />
     </Box>
   );

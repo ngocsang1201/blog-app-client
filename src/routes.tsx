@@ -11,7 +11,6 @@ import {
   ProfilePage,
   RegisterPage,
   SavedPage,
-  SearchPage,
   SettingsPage,
 } from './pages';
 
@@ -89,10 +88,6 @@ const privateRoutes: RouteObject[] = [
       {
         path: '/settings',
         element: <SettingsPage />,
-      },
-      {
-        path: '/search/:type',
-        element: <SearchPage />,
       },
     ],
   },

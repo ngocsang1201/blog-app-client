@@ -1,19 +1,15 @@
-import { CssBaseline, Theme, ThemeProvider } from '@mui/material';
+import { CssBaseline, ThemeProvider as MuiThemeProvider, Theme } from '@mui/material';
 import i18next from 'i18next';
-import { ReactNode, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
-import { useAppSelector } from '~/store/hooks';
-import favicons from '~/assets/favicons';
-import { selectUserConfig } from '~/store/slices/userSlice';
-import { configTheme, themeVariables } from '~/utils/theme';
-import { env, variables } from '~/utils/env';
 import 'react-toastify/dist/ReactToastify.min.css';
+import favicons from '~/assets/favicons';
+import { useAppSelector } from '~/store/hooks';
+import { selectUserConfig } from '~/store/slices/userSlice';
+import { env, variables } from '~/utils/env';
+import { configTheme, themeVariables } from '~/utils/theme';
 
-export interface CustomThemeProviderProps {
-  children: ReactNode;
-}
-
-export function CustomThemeProvider({ children }: CustomThemeProviderProps) {
+export default function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { theme: themeMode, mainColor, language } = useAppSelector(selectUserConfig);
 
   const [theme, setTheme] = useState<Theme>(configTheme(themeMode, mainColor));
@@ -37,7 +33,7 @@ export function CustomThemeProvider({ children }: CustomThemeProviderProps) {
   }, [language]);
 
   return (
-    <ThemeProvider theme={theme}>
+    <MuiThemeProvider theme={theme}>
       <CssBaseline />
 
       {children}
@@ -48,6 +44,6 @@ export function CustomThemeProvider({ children }: CustomThemeProviderProps) {
         style={{ top: themeVariables.headerHeight }}
         toastStyle={{ backgroundColor: theme.palette.background.paper }}
       />
-    </ThemeProvider>
+    </MuiThemeProvider>
   );
 }

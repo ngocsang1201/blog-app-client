@@ -1,6 +1,6 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { usePageTitle } from '~/hooks';
+import { usePageTitle } from '~/hooks/common';
 import { themeVariables } from '~/utils/theme';
 
 export function NotFoundPage() {

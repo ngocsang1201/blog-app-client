@@ -9,15 +9,18 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ActionMenu } from '~/components/common';
-import { useAuthentication } from '~/hooks';
+import { useLogout } from '~/hooks/auth';
 import { MenuOption } from '~/models';
+import { useUserStore } from '~/store';
 
 export function UserActions() {
   const navigate = useNavigate();
 
   const { t } = useTranslation('header');
 
-  const { logout, currentUser } = useAuthentication();
+  const currentUser = useUserStore((state) => state.currentUser);
+
+  const { logout } = useLogout();
 
   const [openMenu, setOpenMenu] = useState(false);
 
@@ -32,7 +35,7 @@ export function UserActions() {
     {
       label: t('user.profile'),
       icon: AccountCircleRounded,
-      onClick: () => navigateTo(`/profile/${currentUser?.username}`),
+      onClick: () => navigateTo(`/profile/${currentUser.username}`),
     },
     {
       label: t('user.settings'),
@@ -59,9 +62,9 @@ export function UserActions() {
         },
       }}
     >
-      <Avatar src={currentUser?.avatar} alt={currentUser?.name} sx={{ width: 36, height: 36 }} />
+      <Avatar src={currentUser.avatar} alt={currentUser.name} sx={{ width: 36, height: 36 }} />
 
-      {currentUser?.name && (
+      {currentUser.name && (
         <Stack ml={1} display={{ xs: 'none', md: 'flex' }}>
           <Typography variant="subtitle2" fontWeight="500">
             {currentUser.name}

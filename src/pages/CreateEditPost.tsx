@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { postApi } from '~/api';
-import { useAppSelector } from '~/store/hooks';
 import { CreateEditForm } from '~/components/post';
-import { usePageTitle } from '~/hooks';
+import { usePageTitle } from '~/hooks/common';
+import { usePostForEdit } from '~/hooks/post';
 import { Post } from '~/models';
-import { selectCurrentUser } from '~/store/slices/userSlice';
+import { useUserStore } from '~/store';
 
 export function CreateEditPage() {
   const navigate = useNavigate();
@@ -15,29 +15,25 @@ export function CreateEditPage() {
 
   const { t } = useTranslation('createEditPage');
 
-  const currentUser = useAppSelector(selectCurrentUser);
-  const [editedPost, setEditedPost] = useState<Post | {}>({});
+  const currentUser = useUserStore((state) => state.currentUser);
 
   usePageTitle(isNewPost ? t('pageTitle.create') : t('pageTitle.edit'));
 
-  useEffect(() => {
-    if (isNewPost) return;
+  const { data: editedPost, isError } = usePostForEdit(postId || '', {
+    enabled: !!postId,
+  });
 
-    (async () => {
-      try {
-        const post = await postApi.getForEdit(postId);
-        setEditedPost(post);
-      } catch (error) {
-        navigate('/create');
-      }
-    })();
-  }, [postId, navigate]);
+  useEffect(() => {
+    if (isError) {
+      navigate('/create', { replace: true });
+    }
+  }, [isError]);
 
   const defaultValues: Post = {
     title: '',
     content: '',
     thumbnail: '',
-    authorId: currentUser?._id!,
+    authorId: currentUser._id!,
     description: '',
     ...editedPost,
   };

@@ -1,3 +1,4 @@
-export const ACCESS_TOKEN = 'access_token';
-
-export const CONFIG = 'config';
+export const localStorageKey = {
+  ACCESS_TOKEN: 'access_token',
+  USER_CONFIG: 'user_config',
+};

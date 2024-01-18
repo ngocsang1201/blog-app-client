@@ -12,10 +12,9 @@ import { Button, CircularProgress, Stack } from '@mui/material';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useAppSelector } from '~/store/hooks';
-import { useFollowUser } from '~/hooks';
+import { useFollowUser } from '~/hooks/common';
 import { MenuOption, User } from '~/models';
-import { selectCurrentUser } from '~/store/slices/userSlice';
+import { useUserStore } from '~/store';
 import { showComingSoonToast } from '~/utils/toast';
 import { ActionMenu, GrayButton } from '.';
 
@@ -34,7 +33,7 @@ export function UserButtonGroup({ user, updateUser, showActionMenu }: UserButton
 
   const { t } = useTranslation('userButtonGroup');
 
-  const currentUser = useAppSelector(selectCurrentUser);
+  const currentUser = useUserStore((state) => state.currentUser);
 
   const [openMenu, setOpenMenu] = useState(false);
 
@@ -43,7 +42,7 @@ export function UserButtonGroup({ user, updateUser, showActionMenu }: UserButton
   const { loading, follow, unfollow } = useFollowUser(updateUser);
 
   const renderFollowButton = () => {
-    const isFollowed = currentUser?.following!.find(({ _id }) => _id === userId);
+    const isFollowed = currentUser.following!.find(({ _id }) => _id === userId);
 
     if (isFollowed) {
       return (
@@ -99,7 +98,7 @@ export function UserButtonGroup({ user, updateUser, showActionMenu }: UserButton
         },
       }}
     >
-      {currentUser?._id === userId ? (
+      {currentUser._id === userId ? (
         <GrayButton
           startIcon={isInProfilePage ? <EditRounded /> : <AccountCircleRounded />}
           fullWidth

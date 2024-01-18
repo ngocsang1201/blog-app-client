@@ -7,19 +7,20 @@ import {
   LinkRounded,
 } from '@mui/icons-material';
 import { Box, CardContent, CardMedia, Stack, Typography } from '@mui/material';
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import { Link, useNavigate } from 'react-router-dom';
 import remarkGfm from 'remark-gfm';
 import { ConfirmDialog, StyledCard } from '~/components/common';
-import { ROLE } from '~/constants';
+import { QueryKey, ROLE } from '~/constants';
+import { useDeletePost, useSavePost, useUnsavePost } from '~/hooks/post';
 import { Post } from '~/models';
-import { useAppSelector } from '~/store/hooks';
-import { selectCurrentUser } from '~/store/slices/userSlice';
+import { useUserStore } from '~/store';
 import { copyPostLink } from '~/utils/common';
 import { themeMixins } from '~/utils/theme';
-import { showComingSoonToast, showToast } from '~/utils/toast';
+import { showComingSoonToast } from '~/utils/toast';
 import { PostCardHeader } from './PostCardHeader';
 
 const allowedElements = [
@@ -43,24 +44,33 @@ const allowedElements = [
 
 export interface PostCardProps {
   post: Post;
-  onSave?: (post: Post) => void;
-  onUnsave?: (post: Post) => void;
-  onDelete?: (post: Post) => void;
   mode?: 'default' | 'saved';
 }
 
 export function PostCard(props: PostCardProps) {
-  const { post, onSave, onUnsave, onDelete, mode = 'default' } = props;
+  const { post, mode = 'default' } = props;
+  const postId = post._id!;
   const isSaved = mode === 'saved';
 
   const navigate = useNavigate();
 
   const { t } = useTranslation('postMenu');
 
-  const currentUser = useAppSelector(selectCurrentUser);
-
-  const [loading, setLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
+
+  const currentUser = useUserStore((state) => state.currentUser);
+
+  const handleSuccess = () => {
+    closeDialog();
+    queryClient.invalidateQueries({ queryKey: [QueryKey.POST_LIST] });
+  };
+
+  const queryClient = useQueryClient();
+  const { mutate: deletePost, isPending: deleting } = useDeletePost({ onSuccess: handleSuccess });
+  const { mutate: savePost } = useSavePost();
+  const { mutate: unsavePost, isPending: unsaving } = useUnsavePost({ onSuccess: handleSuccess });
+
+  const loading = deleting || unsaving;
 
   // prevent click on anchor tag
   useEffect(() => {
@@ -74,43 +84,24 @@ export function PostCard(props: PostCardProps) {
 
   const closeDialog = () => setOpenDialog(false);
 
-  const handleSavePost = async () => {
-    try {
-      await onSave?.(post);
-      showToast('post.save');
-    } catch (error) {}
-  };
-
-  const handleDeletePost = async () => {
-    setLoading(true);
-
-    try {
-      await onDelete?.(post);
-      showToast('post.delete');
-    } catch (error) {}
-
-    setLoading(false);
+  const handleConfirm = () => {
+    if (isSaved) {
+      unsavePost(postId);
+    } else {
+      deletePost(postId);
+    }
     closeDialog();
   };
 
-  const handleUnsavePost = async () => {
-    setLoading(true);
-    try {
-      await onUnsave?.(post);
-      showToast('post.unsave');
-    } catch (error) {}
-    setLoading(false);
-  };
-
-  const isAuthor = post.authorId === currentUser?._id;
-  const isAdmin = currentUser?.role === ROLE.ADMIN;
+  const isAuthor = post.authorId === currentUser._id;
+  const isAdmin = currentUser.role === ROLE.ADMIN;
 
   const actionMenus = {
     default: [
       {
         label: t('save'),
         icon: BookmarkRounded,
-        onClick: handleSavePost,
+        onClick: () => savePost(postId),
         show: true,
       },
       {
@@ -236,7 +227,7 @@ export function PostCard(props: PostCardProps) {
         type={isSaved ? 'post.unsave' : 'post.delete'}
         open={openDialog}
         onClose={closeDialog}
-        onConfirm={isSaved ? handleUnsavePost : handleDeletePost}
+        onConfirm={handleConfirm}
         loading={loading}
       />
     </StyledCard>

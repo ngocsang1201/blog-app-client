@@ -14,12 +14,11 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import queryString from 'query-string';
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { postApi, userApi } from '~/api';
-import { useDebounce, useKeyUp } from '~/hooks';
+import { useDebounce } from '~/hooks/common';
 import { SearchApiType, SearchResult } from '~/models';
 import { formatSearchResponse, slugifyString } from '~/utils/common';
 import { themeMixins } from '~/utils/theme';
@@ -28,8 +27,6 @@ const MAX_ITEM = 5;
 
 export function SearchBoxDesktop() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const params = useParams();
 
   const { t } = useTranslation('header');
 
@@ -40,23 +37,11 @@ export function SearchBoxDesktop() {
 
   const debouncedInput = useDebounce(input, 700);
 
-  const inputRef = useRef<any>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const searchType = useMemo(() => (input.startsWith('@') ? 'users' : 'posts'), [input]);
   const isSearchUser = useMemo(() => searchType === 'users', [searchType]);
   const isMore = useMemo(() => results.length > MAX_ITEM, [results]);
-
-  useEffect(() => {
-    const isInSearchPage = location.pathname.startsWith('/search');
-    if (!isInSearchPage) {
-      setInput('');
-      return;
-    }
-
-    const { q = '' } = queryString.parse(location.search);
-    const searchTerm = (params.type === 'users' ? `@${q}` : q) as string;
-    setInput(searchTerm);
-  }, [location]);
 
   useEffect(() => {
     if (getValidInput(debouncedInput).length < 1) return;
@@ -81,19 +66,11 @@ export function SearchBoxDesktop() {
 
   const clearSearchInput = () => {
     setInput('');
-    inputRef.current.focus();
+    inputRef.current?.focus();
   };
 
   const getValidInput = (input: string) => {
     return isSearchUser ? input.slice(1) : input;
-  };
-
-  const gotoSearchPage = () => {
-    const value = isSearchUser ? input.slice(1) : input;
-    if (!value) return;
-
-    navigate(`/search/${searchType}?q=${value}`);
-    inputRef.current.blur();
   };
 
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -105,9 +82,8 @@ export function SearchBoxDesktop() {
   const goto = (url: string) => {
     clearSearchInput();
     navigate(url);
+    inputRef.current?.blur();
   };
-
-  const onKeyUp = useKeyUp('Enter', gotoSearchPage);
 
   return (
     <Box
@@ -130,7 +106,6 @@ export function SearchBoxDesktop() {
         }}
         value={input}
         onChange={handleSearchChange}
-        onKeyUp={onKeyUp}
         fullWidth
         size="small"
         InputProps={{
@@ -208,7 +183,6 @@ export function SearchBoxDesktop() {
                   <Typography
                     variant="subtitle2"
                     color="text.secondary"
-                    onClick={gotoSearchPage}
                     sx={{
                       display: 'inline-block',
                       textAlign: 'center',

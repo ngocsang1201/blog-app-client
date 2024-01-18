@@ -2,9 +2,8 @@ import { Avatar, Box, Button, CircularProgress, Stack, Typography } from '@mui/m
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { useAppSelector } from '~/store/hooks';
 import { User } from '~/models';
-import { selectCurrentUser } from '~/store/slices/userSlice';
+import { useUserStore } from '~/store';
 
 export interface SuggestionItemProps {
   item: Partial<User>;
@@ -14,13 +13,13 @@ export interface SuggestionItemProps {
 export function SuggestionItem({ item, onFollow }: SuggestionItemProps) {
   const { t } = useTranslation('suggestions');
 
-  const currentUser = useAppSelector(selectCurrentUser);
+  const currentUser = useUserStore((state) => state.currentUser);
 
   const [loading, setLoading] = useState(false);
 
   const isFollowed = useMemo(() => {
-    return !!currentUser?.following?.find((user) => user._id === item._id);
-  }, [currentUser?.following]);
+    return !!currentUser.following?.find((user) => user._id === item._id);
+  }, [currentUser.following]);
 
   const handleFollowClick = async () => {
     setLoading(true);

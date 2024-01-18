@@ -1,6 +1,6 @@
 import { Avatar, Box, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
-import { useCustomMediaQuery } from '~/hooks';
+import { useCustomMediaQuery } from '~/hooks/common';
 import { User } from '~/models';
 import { themeMixins } from '~/utils/theme';
 import { PopperWrapper, PopperWrapperProps, UserButtonGroup } from '.';

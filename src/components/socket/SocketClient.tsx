@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
+import { Socket } from 'socket.io-client';
+import { useUserStore } from '~/store';
 import { useAppSelector } from '~/store/hooks';
-import { selectCurrentUser } from '~/store/slices/userSlice';
 import { selectSocket } from '~/store/slices/socketSlice';
 import { CommentSocket } from './CommentSocket';
-import { Socket } from 'socket.io-client';
 import { NotificationSocket } from './NotificationSocket';
 
 export interface SocketProps {
@@ -12,7 +12,7 @@ export interface SocketProps {
 
 export function SocketClient() {
   const socket = useAppSelector(selectSocket);
-  const currentUser = useAppSelector(selectCurrentUser);
+  const currentUser = useUserStore((state) => state.currentUser);
 
   useEffect(() => {
     if (!socket || !currentUser) return;

@@ -1,15 +1,16 @@
-import { ReactNode } from 'react';
-import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
-import { CustomThemeProvider } from '~/components/common';
-import { store } from '~/store';
+import ReduxProvider from './ReduxProvider';
+import TanStackProvider from './TanStackProvider';
+import ThemeProvider from './ThemeProvider';
 
-export default function Providers({ children }: { children: ReactNode }) {
+export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <Provider store={store}>
-      <CustomThemeProvider>
-        <BrowserRouter>{children}</BrowserRouter>
-      </CustomThemeProvider>
-    </Provider>
+    <TanStackProvider>
+      <ReduxProvider>
+        <ThemeProvider>
+          <BrowserRouter>{children}</BrowserRouter>
+        </ThemeProvider>
+      </ReduxProvider>
+    </TanStackProvider>
   );
 }

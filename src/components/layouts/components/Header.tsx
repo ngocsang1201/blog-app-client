@@ -1,11 +1,10 @@
 import { Box, Container, LinearProgress, Stack } from '@mui/material';
-import { useAppSelector } from '~/store/hooks';
-import { selectPostLoading } from '~/store/slices/postSlice';
+import { useGlobalStore } from '~/store';
 import { themeMixins, themeVariables } from '~/utils/theme';
 import { Brand, SearchBox, Sidebar, UserActions } from '.';
 
 export function Header() {
-  const loading = useAppSelector(selectPostLoading);
+  const loading = useGlobalStore((state) => state.loading);
 
   return (
     <Box

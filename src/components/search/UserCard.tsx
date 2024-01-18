@@ -3,8 +3,7 @@ import { Avatar, Box, CardContent, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { User } from '~/models';
-import { useAppSelector } from '~/store/hooks';
-import { selectCurrentUser } from '~/store/slices/userSlice';
+import { useUserStore } from '~/store';
 import { GrayButton, StyledCard, UserButtonGroup } from '../common';
 
 interface UserCardProps {
@@ -16,7 +15,7 @@ export function UserCard({ user }: UserCardProps) {
 
   const { t } = useTranslation('userCard');
 
-  const currentUser = useAppSelector(selectCurrentUser);
+  const currentUser = useUserStore((state) => state.currentUser);
 
   return (
     <StyledCard>
@@ -47,7 +46,7 @@ export function UserCard({ user }: UserCardProps) {
           </Stack>
 
           <Stack>
-            {user._id === currentUser?._id ? (
+            {user._id === currentUser._id ? (
               <GrayButton
                 variant="contained"
                 fullWidth

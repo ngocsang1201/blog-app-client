@@ -6,10 +6,11 @@ import { authApi } from '~/api';
 import { PageTitle } from '~/components/common';
 import { SettingForm, SettingTabs } from '~/components/settings';
 import { SETTING_TABS } from '~/constants';
-import { usePageTitle } from '~/hooks';
+import { usePageTitle } from '~/hooks/common';
 import { ChangePasswordFormValues, SettingTabItem, User } from '~/models';
-import { useAppDispatch, useAppSelector } from '~/store/hooks';
-import { selectCurrentUser, updateCurrentUserAsync } from '~/store/slices/userSlice';
+import { useUserStore } from '~/store';
+import { useAppDispatch } from '~/store/hooks';
+import { updateCurrentUserAsync } from '~/store/slices/userSlice';
 import { themeMixins } from '~/utils/theme';
 
 export function SettingsPage() {
@@ -21,7 +22,7 @@ export function SettingsPage() {
   const { t } = useTranslation('settingsPage');
 
   const dispatch = useAppDispatch();
-  const currentUser = useAppSelector(selectCurrentUser);
+  const currentUser = useUserStore((state) => state.currentUser);
 
   usePageTitle(t('pageTitle'));
 
@@ -34,7 +35,7 @@ export function SettingsPage() {
   };
 
   const handleForgotPassword = async () => {
-    if (!currentUser?.email) return;
+    if (!currentUser.email) return;
     await authApi.forgotPassword(currentUser.email);
   };
 

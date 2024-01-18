@@ -1,4 +1,4 @@
-import { ListParams, ListResponse, Post } from '~/models';
+import { LikeResponse, ListParams, ListResponse, Post } from '~/models';
 import axiosClient from './axiosClient';
 
 export const postApi = {
@@ -30,7 +30,7 @@ export const postApi = {
     const url = `/posts/${id}`;
     return axiosClient.delete(url);
   },
-  like(id: string): Promise<Partial<Post>> {
+  like(id: string): Promise<LikeResponse> {
     const url = `/posts/${id}/like`;
     return axiosClient.post(url);
   },

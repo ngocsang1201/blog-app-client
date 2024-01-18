@@ -1,5 +1,5 @@
 import { Drawer, MenuItem, MenuList, PopperProps } from '@mui/material';
-import { useCustomMediaQuery } from '~/hooks';
+import { useCustomMediaQuery } from '~/hooks/common';
 import { MenuOption } from '~/models';
 import { PopperWrapper } from '.';
 import { ReactNode } from 'react';

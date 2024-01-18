@@ -1,6 +1,6 @@
 import axios from 'axios';
 import queryString from 'query-string';
-import { ACCESS_TOKEN } from '~/constants';
+import { localStorageKey } from '~/constants';
 import { env, variables } from '~/utils/env';
 import { showToast } from '~/utils/toast';
 
@@ -16,7 +16,7 @@ const axiosClient = axios.create({
 });
 
 axiosClient.interceptors.request.use(async (config) => {
-  const token = localStorage.getItem(ACCESS_TOKEN);
+  const token = localStorage.getItem(localStorageKey.ACCESS_TOKEN);
   if (token && config.url !== env(variables.cdnUrl)) {
     config.headers && (config.headers.Authorization = `Bearer ${token}`);
   }
